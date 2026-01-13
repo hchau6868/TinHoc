@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM CYBERPUNK - FIXED TEXT v3.4</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Audiowide&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* --- THEME: MATRIX / CYBERPUNK --- */
+        :root {
+            --term-green: #00ff41;
+            --cyber-blue: #00f3ff;
+            --dark-bg: #000500;
+            --glass-bg: rgba(0, 20, 0, 0.85);
+        }
+        body { margin: 0; overflow: hidden; background-color: var(--dark-bg); font-family: 'Share Tech Mono', monospace; }
+        
+        #canvas-container { 
+            width: 100%; height: 100vh; display: block; 
+            background: 
+                linear-gradient(rgba(0, 10, 0, 0.9), rgba(0, 0, 0, 1)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 1px, rgba(0, 255, 65, 0.03) 1px, rgba(0, 255, 65, 0.03) 2px),
+                repeating-linear-gradient(90deg, transparent 0, transparent 1px, rgba(0, 255, 65, 0.03) 1px, rgba(0, 255, 65, 0.03) 2px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+        
+        #header-bar {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 10px 0;
+            background: linear-gradient(to bottom, rgba(0,50,0,0.8), rgba(0,0,0,0));
+            text-align: center;
+            border-bottom: 1px solid var(--term-green);
+            z-index: 10;
+        }
+        .main-status {
+            font-size: 28px; font-weight: 700; color: var(--term-green);
+            text-transform: uppercase; letter-spacing: 4px;
+            text-shadow: 0 0 10px var(--term-green);
+            font-family: 'Audiowide', cursive; 
+        }
+        .sub-status { font-size: 12px; color: var(--cyber-blue); letter-spacing: 2px; margin-top: 5px;}
+        .sub-status::before { content: "[ "; } .sub-status::after { content: " ]"; }
+
+        #ui-layer {
+            position: absolute; bottom: 30px; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            pointer-events: none; z-index: 100;
+        }
+        .guide-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--term-green);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+            color: #ccffcc; font-size: 14px;
+            padding: 15px 40px; 
+            margin-bottom: 25px;
+            display: flex; gap: 40px;
+            clip-path: polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%);
+        }
+        .guide-item b { color: var(--cyber-blue); }
+
+        .cyber-button {
+            pointer-events: auto; cursor: pointer;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid var(--term-green);
+            color: var(--term-green);
+            padding: 15px 50px;
+            font-family: 'Share Tech Mono', monospace; font-size: 18px; letter-spacing: 2px;
+            box-shadow: 0 0 10px var(--term-green), inset 0 0 20px rgba(0, 255, 65, 0.2);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .cyber-button:hover { 
+            background: var(--term-green); color: #000; 
+            box-shadow: 0 0 30px var(--term-green);
+        }
+        .cyber-button:disabled { border-color: #333; color: #555; background: #000; cursor: wait; box-shadow: none;}
+
+        #camera-frame-container {
+            position: absolute; top: 80px; right: 20px;
+            width: auto; height: auto;
+            padding: 4px;
+            background: #000;
+            border: 2px solid var(--term-green); 
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); 
+            z-index: 50; 
+        }
+        #camera-frame-container::before {
+            content: "LIVE FEED // ONSCREEN"; position: absolute; bottom: -20px; right: 0;
+            font-size: 10px; color: var(--term-green); letter-spacing: 1px;
+        }
+        
+        #camera-preview {
+            width: 240px; height: 180px; 
+            display: block;
+            transform: scaleX(-1); 
+            opacity: 0.9;
+            filter: grayscale(30%) sepia(60%) hue-rotate(90deg) contrast(1.2); 
+            border: 1px solid var(--cyber-blue);
+        }
+    </style>
+</head>
+<body>
+    <div id="header-bar">
+        <div id="main-status" class="main-status">SYSTEM INITIALIZING...</div>
+        <div id="sub-status" class="sub-status">PROTOCOL: FIXED_MODE // V3.4</div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="guide-panel">
+            <div class="guide-item">✊ <b>NẮM / KO TAY:</b> Ổn định</div>
+            <div class="guide-item">🖐 <b>XÒE:</b> Nổ Dữ Liệu</div>
+            <div class="guide-item">👌 <b>CHỤM:</b> Xem Ảnh</div>
+        </div>
+        <button id="btnStart" class="cyber-button" onclick="startSystem()" disabled>CALCULATING PARTICLES...</button>
+    </div>
+
+    <div id="canvas-container"></div>
+    <div id="camera-frame-container">
+        <canvas id="camera-preview"></canvas>
+    </div>
+    <video class="input_video" style="display:none"></video>
+
+    <script>
+        // --- CẤU HÌNH ---
+        const MAIN_TEXT_CONTENT = "TIN HỌC";
+        const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_b8c9103947.mp3?filename=cyberpunk-city-11038.mp3"; 
+
+        const photoFiles = [
+            'images/anh1.jpg',
+            'images/anh2.jpg',
+            'images/anh3.jpg',
+            'images/anh4.jpg',
+            'images/anh5.jpg',
+            'images/anh6.jpg',
+            'images/anh7.jpg',
+            'images/anh8.jpg',
+            'images/anh9.jpg',
+            'images/anh10.jpg'
+        ];
+
+        const loader = new THREE.TextureLoader();
+        
+        function createBinaryTexture(char, color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold 50px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = color; ctx.shadowBlur = 10;
+            ctx.fillText(char, 32, 32);
+
+            const grd = ctx.createRadialGradient(32, 32, 10, 32, 32, 32);
+            grd.addColorStop(0, 'rgba(255,255,255,0.1)');
+            grd.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grd; ctx.fillRect(0,0,64,64);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const textures = {
+            zero: createBinaryTexture('0', '#00ff41'),
+            one: createBinaryTexture('1', '#00f3ff'), 
+            pixel: createBinaryTexture('■', '#ffffff')
+        };
+
+        const CONFIG = {
+            group1Count: 30000, 
+            group2Count: 20000, 
+            group3Count: 10000, 
+            explodeRadius: 100, 
+            photoOrbitRadius: 70, 
+        };
+
+        let scene, camera, renderer;
+        let group1, group2, group3; 
+        let photoMeshes = [];     
+        let subtitleMesh;
+        let bgMusic; 
+        
+        let state = 'TEXT'; 
+        let selectedIndex = 0;
+        let handX = 0.5;
+        let allTextPoints = []; 
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000500, 0.002);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 3000);
+            camera.position.z = 180; 
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            let offset = 0;
+            group1 = createParticleSystem('zero', CONFIG.group1Count, 2.0, allTextPoints.slice(offset, offset + CONFIG.group1Count * 3));
+            offset += CONFIG.group1Count * 3;
+            group2 = createParticleSystem('one', CONFIG.group2Count, 2.0, allTextPoints.slice(offset, offset + CONFIG.group2Count * 3));
+            offset += CONFIG.group2Count * 3;
+            const remainingPoints = allTextPoints.slice(offset);
+            group3 = createParticleSystem('pixel', remainingPoints.length / 3, 1.5, remainingPoints);
+
+            createPhotos();
+            createSubtitle();
+            animate();
+        }
+
+        function generatePointsFromText(text, callback) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1024; canvas.height = 256; 
+
+            ctx.font = '900 120px "Audiowide", sans-serif'; 
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+
+            let validPixels = [];
+            
+            for (let y = 0; y < canvas.height; y += 1) { 
+                for (let x = 0; x < canvas.width; x += 1) {
+                    const index = (y * canvas.width + x) * 4;
+                    if (data[index] > 200) { 
+                        // Giữ kích thước nhỏ gọn (0.45)
+                        const pX = (x - canvas.width / 2) * 0.45; 
+                        const pY = -(y - canvas.height / 2) * 0.45; 
+                        const pZ = (Math.random() - 0.5) * 15; 
+
+                        validPixels.push(pX, pY, pZ);
+                    }
+                }
+            }
+
+            const totalParticlesNeeded = CONFIG.group1Count + CONFIG.group2Count + CONFIG.group3Count;
+            allTextPoints = [];
+
+            if (validPixels.length > 0) {
+                for(let i = 0; i < totalParticlesNeeded; i++) {
+                     const randIndex = Math.floor(Math.random() * (validPixels.length / 3)) * 3;
+                     allTextPoints.push(
+                         validPixels[randIndex],
+                         validPixels[randIndex + 1],
+                         validPixels[randIndex + 2]
+                     );
+                }
+            }
+            
+            for (let i = allTextPoints.length / 3 - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allTextPoints[i*3], allTextPoints[j*3]] = [allTextPoints[j*3], allTextPoints[i*3]];
+                [allTextPoints[i*3+1], allTextPoints[j*3+1]] = [allTextPoints[j*3+1], allTextPoints[i*3+1]];
+                [allTextPoints[i*3+2], allTextPoints[j*3+2]] = [allTextPoints[j*3+2], allTextPoints[i*3+2]];
+            }
+
+            callback();
+        }
+
+        function createParticleSystem(type, count, size, targetPositions) {
+            const pPositions = [];
+            const pExplodeTargets = [];
+            const pTextTargets = [];
+            
+            for(let i=0; i<count; i++) {
+                const tx = targetPositions[i*3] || 0;
+                const ty = targetPositions[i*3+1] || 0;
+                const tz = targetPositions[i*3+2] || 0;
+                pTextTargets.push(tx, ty, tz);
+
+                const u = Math.random(); const v = Math.random();
+                const phi = Math.acos(2 * v - 1); const lam = 2 * Math.PI * u;
+                const rad = CONFIG.explodeRadius * (0.8 + 0.6 * Math.random());
+                
+                pExplodeTargets.push(
+                    rad * Math.sin(phi) * Math.cos(lam),
+                    rad * Math.sin(phi) * Math.sin(lam),
+                    rad * Math.cos(phi) * 1.5
+                );
+                pPositions.push(pExplodeTargets[i*3], pExplodeTargets[i*3+1], pExplodeTargets[i*3+2]);
+            }
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pPositions, 3));
+            geo.userData = { text: pTextTargets, explode: pExplodeTargets };
+
+            const mat = new THREE.PointsMaterial({
+                size: size, map: textures[type],
+                transparent: true, opacity: 0.8, 
+                blending: THREE.AdditiveBlending, 
+                depthWrite: false, sizeAttenuation: true,
+                alphaTest: 0.1
+            });
+
+            const points = new THREE.Points(geo, mat);
+            scene.add(points);
+            return points;
+        }
+
+        function createPhotos() {
+            const aspectRatio = 16 / 9;
+            const baseHeight = 1;
+            const baseWidth = baseHeight * aspectRatio;
+
+            const geo = new THREE.PlaneGeometry(baseWidth, baseHeight);
+            const borderGeo = new THREE.PlaneGeometry(baseWidth + 0.05, baseHeight + 0.05); 
+            const borderMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, side: THREE.DoubleSide, wireframe: true }); 
+
+            photoFiles.forEach((file, i) => {
+                const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+                const mesh = new THREE.Mesh(geo, mat);
+                
+                loader.load(file, (tex) => {
+                    mat.map = tex; mat.needsUpdate = true;
+                });
+
+                const border = new THREE.Mesh(borderGeo, borderMat);
+                border.position.z = -0.01;
+
+                mesh.add(border);
+                mesh.visible = false; mesh.scale.set(0,0,0);
+                scene.add(mesh);
+                photoMeshes.push(mesh);
+            });
+        }
+
+        function createSubtitle() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.font = '700 35px "Share Tech Mono", monospace';
+            ctx.fillStyle = '#00ff41'; ctx.textAlign = 'center';
+            ctx.shadowColor = "#00f3ff"; ctx.shadowBlur = 20; 
+            ctx.fillText(">> SYSTEM READY: STANDBY MODE <<", 512, 80);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+            subtitleMesh = new THREE.Mesh(new THREE.PlaneGeometry(65, 8), mat);
+            subtitleMesh.position.set(0, -60, 0); 
+            scene.add(subtitleMesh);
+        }
+
+        function updateParticleGroup(group, targetState, speed, handRotY, time) {
+            if(!group) return;
+            const positions = group.geometry.attributes.position.array;
+            const targetKey = (targetState === 'TEXT') ? 'text' : 'explode';
+            const targets = group.geometry.userData[(targetState === 'PHOTO') ? 'explode' : targetKey];
+
+            for(let i=0; i<positions.length; i++) {
+                let t = targets[i];
+                if (Math.random() < 0.0005) t += (Math.random() - 0.5) * 20; 
+                positions[i] += (t - positions[i]) * speed;
+            }
+            group.geometry.attributes.position.needsUpdate = true;
+            
+            if (targetState === 'TEXT') {
+                // --- CỐ ĐỊNH HOÀN TOÀN TẠI ĐÂY ---
+                // Xóa bỏ Math.sin và Math.cos để chữ đứng im
+                group.rotation.y = 0; 
+                group.rotation.x = 0; 
+                group.rotation.z = 0; 
+                group.scale.set(1, 1, 1); 
+            } else {
+                group.rotation.y += 0.003;
+                group.rotation.z += 0.001;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.001;
+            const speed = 0.06; 
+            const targetHandRotY = (handX - 0.5) * 2;
+
+            updateParticleGroup(group1, state, speed, targetHandRotY, time);
+            updateParticleGroup(group2, state, speed, targetHandRotY, time); 
+            updateParticleGroup(group3, state, speed, targetHandRotY, time);
+
+            if (state === 'TEXT') {
+                subtitleMesh.visible = true;
+                photoMeshes.forEach(m => { m.scale.lerp(new THREE.Vector3(0,0,0), 0.1); m.visible = false; });
+            } else if (state === 'EXPLODE') {
+                subtitleMesh.visible = false;
+                
+                const angleStep = (Math.PI * 2) / photoMeshes.length;
+                let bestIdx = 0; let maxZ = -999;
+
+                photoMeshes.forEach((mesh, i) => {
+                    mesh.visible = true;
+                    const angle = i * angleStep + time * 0.2; 
+                    const radius = CONFIG.photoOrbitRadius;
+                    
+                    const x = Math.sin(angle) * radius;
+                    const z = Math.cos(angle) * radius;
+                    const y = Math.sin(angle * 3 + time) * 15; 
+
+                    mesh.position.lerp(new THREE.Vector3(x, y, z), 0.05);
+                    mesh.lookAt(0, 0, 0); 
+                    mesh.rotation.y += Math.PI; 
+
+                    if (z > maxZ) { maxZ = z; bestIdx = i; }
+                    
+                    const distScale = 10; 
+                    mesh.scale.lerp(new THREE.Vector3(distScale, distScale, 1), 0.1);
+                });
+                selectedIndex = bestIdx;
+
+            } else if (state === 'PHOTO') {
+                photoMeshes.forEach((mesh, i) => {
+                    if (i === selectedIndex) {
+                        mesh.position.lerp(new THREE.Vector3(0, 0, 120), 0.08);
+                        mesh.lookAt(camera.position);
+                        
+                        let maxSize = 60; 
+                        mesh.scale.lerp(new THREE.Vector3(maxSize, maxSize, 1), 0.08);
+                    } else {
+                        mesh.scale.lerp(new THREE.Vector3(0,0,0), 0.1);
+                    }
+                });
+            }
+            renderer.render(scene, camera);
+        }
+
+        // --- UI & LOGIC ---
+        const mainStatus = document.getElementById('main-status');
+        const subStatus = document.getElementById('sub-status');
+
+        function updateStatusUI(textState, subText) {
+            mainStatus.innerText = textState;
+            subStatus.innerText = subText;
+        }
+
+        function startSystem() {
+            document.getElementById('btnStart').style.display = 'none';
+            
+            bgMusic = new Audio(MUSIC_URL);
+            bgMusic.loop = true; 
+            bgMusic.volume = 0.5; 
+            bgMusic.play().catch(e => console.log("Cần tương tác để phát nhạc:", e));
+
+            init3D();
+
+            const video = document.getElementsByClassName('input_video')[0];
+            const canvas = document.getElementById('camera-preview');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = 240;
+            canvas.height = 180;
+            
+            let frameCnt = 0;
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+            hands.onResults(results => {
+                const width = canvas.width;
+                const height = canvas.height;
+
+                ctx.clearRect(0,0,width,height); 
+                ctx.drawImage(results.image, 0, 0, width, height);
+                
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    for (const landmarks of results.multiHandLandmarks) {
+                        drawConnectors(ctx, landmarks, HAND_CONNECTIONS,
+                                       {color: '#00ff41', lineWidth: 2});
+                        drawLandmarks(ctx, landmarks,
+                                      {color: '#00f3ff', lineWidth: 1, radius: 3});
+                    }
+
+                    const lm = results.multiHandLandmarks[0];
+                    handX = lm[9].x; 
+                    const tips = [8,12,16,20]; const wrist = lm[0];
+                    let openDist = 0; tips.forEach(i => openDist += Math.hypot(lm[i].x-wrist.x, lm[i].y-wrist.y));
+                    const avgDist = openDist / 4;
+                    const pinchDist = Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
+
+                    if (avgDist < 0.2) { 
+                        state = 'TEXT'; updateStatusUI("STABLE MODE", "[ SYSTEM LOCKED ]");
+                    } else if (pinchDist < 0.05) {
+                        state = 'PHOTO'; updateStatusUI("PHOTO MODE", "[ VIEWING FILE: " + selectedIndex + " ]");
+                    } else {
+                        state = 'EXPLODE'; updateStatusUI("EXPLODE MODE", "[ DATA STREAMING... ]");
+                    }
+                } else {
+                    state = 'TEXT'; updateStatusUI("STANDBY", "[ WAITING INPUT ]");
+                    handX = 0.5; 
+                }
+            });
+
+            const cameraUtils = new Camera(video, {
+                onFrame: async () => {
+                    frameCnt++; if(frameCnt%2 !== 0) return; 
+                    await hands.send({image: video});
+                }, width: 640, height: 480 
+            });
+            cameraUtils.start();
+        }
+
+        window.onload = () => {
+            const btn = document.getElementById('btnStart');
+            generatePointsFromText(MAIN_TEXT_CONTENT, () => {
+                btn.innerText = ">> ACTIVATE SYSTEM <<";
+                btn.disabled = false;
+            });
+        };
+
+        window.addEventListener('resize', () => {
+            if(camera) { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        });
+    </script>
+</body>
+</html>
