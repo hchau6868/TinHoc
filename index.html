@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM CYBERPUNK - FIXED MODE</title>
+    <title>STEM SYSTEM - FINAL FIX</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -17,113 +17,74 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
-        :root {
-            --term-green: #00ff41; 
-            --cyber-blue: #00f3ff; 
-            --dark-bg: #000500;
-        }
+        :root { --term-green: #00ff41; --cyber-blue: #00f3ff; --dark-bg: #000500; }
         body { margin: 0; overflow: hidden; background-color: var(--dark-bg); font-family: 'Share Tech Mono', monospace; }
         
         #canvas-container { 
             width: 100%; height: 100vh; display: block; 
-            background: 
-                linear-gradient(rgba(0, 10, 0, 0.9), rgba(0, 0, 0, 1)),
-                repeating-linear-gradient(0deg, transparent 0, transparent 1px, rgba(0, 255, 65, 0.03) 1px, rgba(0, 255, 65, 0.03) 2px),
-                repeating-linear-gradient(90deg, transparent 0, transparent 1px, rgba(0, 255, 65, 0.03) 1px, rgba(0, 255, 65, 0.03) 2px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background: radial-gradient(circle at center, #051005 0%, #000000 100%);
         }
         
-        /* Header */
         #header-bar {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 10px 0;
-            background: linear-gradient(to bottom, rgba(0,50,0,0.8), rgba(0,0,0,0));
-            text-align: center;
-            border-bottom: 1px solid var(--term-green);
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; padding: 10px 0;
+            background: linear-gradient(to bottom, rgba(0,20,0,0.9), transparent);
+            text-align: center; border-bottom: 1px solid var(--term-green); z-index: 10;
         }
-        .main-status {
-            font-size: 28px; font-weight: 700; color: var(--term-green);
-            text-transform: uppercase; letter-spacing: 4px;
-            text-shadow: 0 0 10px var(--term-green);
-        }
-        .sub-status { font-size: 12px; color: var(--cyber-blue); letter-spacing: 2px; margin-top: 5px;}
+        .main-status { font-size: 28px; color: var(--term-green); text-shadow: 0 0 10px var(--term-green); }
+        .sub-status { font-size: 12px; color: var(--cyber-blue); letter-spacing: 2px; }
 
-        /* Footer Hướng dẫn */
         #ui-layer {
             position: absolute; bottom: 30px; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            pointer-events: none; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 100;
         }
         .guide-panel {
-            background: rgba(0, 20, 0, 0.85);
-            border: 1px solid var(--term-green);
-            color: #ccffcc; font-size: 14px;
-            padding: 15px 40px; 
-            margin-bottom: 25px;
-            display: flex; gap: 40px;
+            background: rgba(0, 20, 0, 0.85); border: 1px solid var(--term-green);
+            color: #ccffcc; padding: 10px 30px; margin-bottom: 20px; display: flex; gap: 30px;
         }
         .guide-item b { color: var(--cyber-blue); }
 
-        /* Nút Start */
         .cyber-button {
-            pointer-events: auto; cursor: pointer;
-            background: rgba(0, 20, 0, 0.9);
-            border: 2px solid var(--term-green);
-            color: var(--term-green);
-            padding: 15px 50px;
-            font-family: 'Share Tech Mono', monospace; font-size: 18px;
-            box-shadow: 0 0 10px var(--term-green);
-            transition: all 0.3s ease;
+            pointer-events: auto; cursor: pointer; background: #000; border: 2px solid var(--term-green);
+            color: var(--term-green); padding: 15px 40px; font-family: inherit; font-size: 18px;
+            box-shadow: 0 0 15px var(--term-green); transition: 0.3s;
         }
-        .cyber-button:hover { background: var(--term-green); color: #000; box-shadow: 0 0 30px var(--term-green);}
+        .cyber-button:hover { background: var(--term-green); color: #000; }
         
-        /* Khung Camera */
         #camera-frame-container {
-            position: absolute; top: 80px; right: 20px;
-            padding: 2px; background: #000;
-            border: 1px solid var(--term-green);
-            box-shadow: 0 0 10px var(--term-green);
+            position: absolute; top: 80px; right: 20px; padding: 2px; background: #000;
+            border: 1px solid var(--term-green); box-shadow: 0 0 10px var(--term-green);
         }
         #camera-preview {
-            width: 240px; height: 135px; /* Tỉ lệ 16:9 cho HD */
-            transform: scaleX(-1); display: block;
-            /* Filter xanh lá ma trận */
-            filter: grayscale(100%) sepia(100%) hue-rotate(90deg) contrast(1.1); 
-        }
-        .cam-label {
-            position: absolute; bottom: -15px; right: 0; 
-            color: var(--term-green); font-size: 10px;
+            width: 240px; height: 135px; transform: scaleX(-1); display: block;
+            filter: grayscale(100%) sepia(100%) hue-rotate(90deg) contrast(1.2); 
         }
     </style>
 </head>
 <body>
     <div id="header-bar">
         <div id="main-status" class="main-status">SYSTEM INITIALIZING...</div>
-        <div id="sub-status" class="sub-status">[ PROTOCOL: FIXED_MODE // V3.4 ]</div>
+        <div id="sub-status" class="sub-status">[ STATUS: ONLINE // MODE: NO_SKELETON ]</div>
     </div>
 
     <div id="ui-layer">
         <div class="guide-panel">
-            <div class="guide-item">✊ <b>NẮM / KO TAY:</b> Ổn định</div>
+            <div class="guide-item">✊ <b>NẮM:</b> Ổn định</div>
             <div class="guide-item">🖐 <b>XÒE:</b> Nổ Dữ Liệu</div>
             <div class="guide-item">👌 <b>CHỤM:</b> Xem Ảnh</div>
         </div>
-        <button id="btnStart" class="cyber-button" onclick="startSystem()" disabled>CALCULATING PARTICLES...</button>
+        <button id="btnStart" class="cyber-button" onclick="startSystem()" disabled>LOADING RESOURCES...</button>
     </div>
 
     <div id="canvas-container"></div>
     <div id="camera-frame-container">
         <canvas id="camera-preview"></canvas>
-        <div class="cam-label">LIVE FEED // ONSCREEN</div>
     </div>
     <video class="input_video" style="display:none"></video>
 
     <script>
-        // --- 1. CẤU HÌNH LIÊN KẾT ẢNH ---
-        // Thay link ảnh của bạn vào đây
+        // --- CẤU HÌNH ---
         const photoFiles = [
-            'https://placehold.co/400x600/003300/00ff41?text=CODE+1',
+            'https://placehold.co/400x600/003300/00ff41?text=CODE',
             'https://placehold.co/400x400/001133/00f3ff?text=JAVA',
             'https://placehold.co/600x400/110000/ff0055?text=PYTHON',
             'https://placehold.co/400x500/333300/ffff00?text=C++',
@@ -135,29 +96,21 @@
             'https://placehold.co/400x500/333300/ffff00?text=AI'
         ];
 
-        // --- 2. CẤU HÌNH HỆ THỐNG (Đã giảm nhẹ cho máy đỡ lag) ---
         const CONFIG = {
-            group1Count: 6000,  // Giảm từ 20k -> 6k
-            group2Count: 4000,  // Giảm từ 15k -> 4k
-            group3Count: 2000,  // Giảm từ 5k -> 2k
-            explodeRadius: 100,  
-            photoOrbitRadius: 65, 
-            textString: "STEM TIN HOC", 
-            textLayers: 4       // Giảm lớp chữ xuống 4 cho nhẹ
+            group1Count: 6000, 
+            group2Count: 4000, 
+            group3Count: 2000, 
+            explodeRadius: 100, photoOrbitRadius: 65, textString: "STEM TIN HOC", textLayers: 4
         };
 
         const loader = new THREE.TextureLoader();
-        
-        // Tạo Texture số 0 và 1
         function createBinaryTexture(char, color) {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = color;
-            ctx.font = 'bold 50px "Courier New", monospace';
+            ctx.fillStyle = color; ctx.font = 'bold 50px monospace';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.shadowColor = color; ctx.shadowBlur = 10;
-            ctx.fillText(char, 32, 32);
+            ctx.shadowColor = color; ctx.shadowBlur = 10; ctx.fillText(char, 32, 32);
             return new THREE.CanvasTexture(canvas);
         }
 
@@ -167,21 +120,14 @@
             pixel: createBinaryTexture('■', '#ffffff')
         };
 
-        let scene, camera, renderer;
-        let group1, group2, group3; 
-        let photoMeshes = [];    
-        let subtitleMesh;
-        
-        let state = 'TEXT'; 
-        let selectedIndex = 0;
-        let handX = 0.5;
-        let allTextPoints = []; 
+        let scene, camera, renderer, group1, group2, group3; 
+        let photoMeshes = []; let subtitleMesh;
+        let state = 'TEXT'; let selectedIndex = 0; let handX = 0.5; let allTextPoints = []; 
 
         function init3D() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000500, 0.002);
-
             camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 3000);
             camera.position.z = 160; 
 
@@ -191,13 +137,11 @@
             container.appendChild(renderer.domElement);
 
             let offset = 0;
-            // Tạo 3 nhóm hạt
             group1 = createParticleSystem('zero', CONFIG.group1Count, 2.5, allTextPoints.slice(offset, offset + CONFIG.group1Count * 3));
             offset += CONFIG.group1Count * 3;
             group2 = createParticleSystem('one', CONFIG.group2Count, 2.5, allTextPoints.slice(offset, offset + CONFIG.group2Count * 3));
             offset += CONFIG.group2Count * 3;
-            const remainingPoints = allTextPoints.slice(offset);
-            group3 = createParticleSystem('pixel', remainingPoints.length / 3, 2.0, remainingPoints);
+            group3 = createParticleSystem('pixel', allTextPoints.slice(offset).length / 3, 2.0, allTextPoints.slice(offset));
 
             createPhotos();
             createSubtitle();
@@ -206,14 +150,12 @@
 
         function preLoadAndGenerateTextPoints(callback) {
             const fontLoader = new THREE.FontLoader();
-            // Sử dụng link font ổn định từ GitHub
             fontLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/fonts/helvetiker_bold.typeface.json', function (font) {
                 const textGeo = new THREE.TextGeometry(CONFIG.textString, {
                     font: font, size: 22, height: 2, curveSegments: 6,
                     bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.2, bevelSegments: 2
                 });
                 textGeo.center();
-
                 const tempPosition = new THREE.Vector3();
                 const totalNeeded = CONFIG.group1Count + CONFIG.group2Count + CONFIG.group3Count;
                 const pointsPerLayer = Math.ceil(totalNeeded / CONFIG.textLayers);
@@ -221,16 +163,13 @@
                 for(let layer = 0; layer < CONFIG.textLayers; layer++) {
                     const layerMesh = new THREE.Mesh(textGeo.clone());
                     layerMesh.position.z = (layer - (CONFIG.textLayers-1)/2) * 2; 
-                    
                     const sampler = new THREE.MeshSurfaceSampler(layerMesh).build();
                     for (let i = 0; i < pointsPerLayer; i++) {
-                        sampler.sample(tempPosition);
-                        tempPosition.add(layerMesh.position);
+                        sampler.sample(tempPosition); tempPosition.add(layerMesh.position);
                         allTextPoints.push(tempPosition.x, tempPosition.y, tempPosition.z);
                     }
                 }
-                
-                // Trộn điểm
+                // Shuffle
                 for (let i = allTextPoints.length / 3 - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [allTextPoints[i*3], allTextPoints[j*3]] = [allTextPoints[j*3], allTextPoints[i*3]];
@@ -238,10 +177,7 @@
                     [allTextPoints[i*3+2], allTextPoints[j*3+2]] = [allTextPoints[j*3+2], allTextPoints[i*3+2]];
                 }
                 callback();
-            }, 
-            undefined, // onProgress
-            function(err) { console.error("Lỗi tải Font:", err); alert("Không tải được Font! Kiểm tra mạng."); }
-            );
+            });
         }
 
         function createParticleSystem(type, count, size, targetPositions) {
@@ -251,16 +187,10 @@
                 const ty = targetPositions[i*3+1] || (Math.random()*100 - 50);
                 const tz = targetPositions[i*3+2] || 0;
                 pTextTargets.push(tx, ty, tz);
-                
+                const rad = CONFIG.explodeRadius * (0.8 + 0.5 * Math.random());
                 const u = Math.random(); const v = Math.random();
                 const phi = Math.acos(2 * v - 1); const lam = 2 * Math.PI * u;
-                const rad = CONFIG.explodeRadius * (0.8 + 0.5 * Math.random());
-                
-                pExplodeTargets.push(
-                    rad * Math.sin(phi) * Math.cos(lam),
-                    rad * Math.sin(phi) * Math.sin(lam),
-                    rad * Math.cos(phi) * 2
-                );
+                pExplodeTargets.push(rad * Math.sin(phi) * Math.cos(lam), rad * Math.sin(phi) * Math.sin(lam), rad * Math.cos(phi) * 2);
                 pPositions.push(tx, ty, tz);
             }
             const geo = new THREE.BufferGeometry();
@@ -276,187 +206,119 @@
         }
 
         function createPhotos() {
-            const geo = new THREE.PlaneGeometry(1, 1);
-            const borderGeo = new THREE.PlaneGeometry(1.05, 1.05); 
-            const borderMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, side: THREE.DoubleSide, wireframe: true }); 
-
             photoFiles.forEach((file, i) => {
                 const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-                loader.load(file, (tex) => {
-                    mat.map = tex; mat.needsUpdate = true;
-                    mesh.userData.aspectRatio = tex.image.width / tex.image.height;
-                });
-                const mesh = new THREE.Mesh(geo, mat);
-                const border = new THREE.Mesh(borderGeo, borderMat);
-                border.position.z = -0.01;
-                
-                // Scan Line effect
-                const scanLine = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.05), new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
-                scanLine.position.z = 0.02; mesh.add(scanLine); mesh.userData.scanLine = scanLine;
-
-                mesh.add(border); mesh.visible = false; mesh.scale.set(0,0,0);
-                scene.add(mesh); photoMeshes.push(mesh);
+                loader.load(file, (tex) => { mat.map = tex; mat.needsUpdate = true; mesh.userData.aspectRatio = tex.image.width/tex.image.height; });
+                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+                const border = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.05), new THREE.MeshBasicMaterial({ color: 0x00ff41, side: THREE.DoubleSide, wireframe: true }));
+                border.position.z = -0.01; mesh.add(border);
+                mesh.visible = false; mesh.scale.set(0,0,0); scene.add(mesh); photoMeshes.push(mesh);
             });
         }
 
         function createSubtitle() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1024; canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.font = '700 40px "Share Tech Mono", monospace';
-            ctx.fillStyle = '#00ff41'; ctx.textAlign = 'center';
-            ctx.shadowColor = "#00f3ff"; ctx.shadowBlur = 20; 
-            ctx.fillText(">> SYSTEM READY: UPLOAD COMPLETE <<", 512, 80);
-            const tex = new THREE.CanvasTexture(canvas);
-            const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-            subtitleMesh = new THREE.Mesh(new THREE.PlaneGeometry(65, 8), mat);
+            const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 128;
+            const ctx = canvas.getContext('2d'); ctx.font = '700 40px monospace';
+            ctx.fillStyle = '#00ff41'; ctx.textAlign = 'center'; ctx.fillText(">> SYSTEM READY <<", 512, 80);
+            subtitleMesh = new THREE.Mesh(new THREE.PlaneGeometry(65, 8), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending }));
             subtitleMesh.position.set(0, -35, 0); scene.add(subtitleMesh);
         }
 
         function updateParticleGroup(group, targetState, speed, handRotY, time) {
             if(!group) return;
             const positions = group.geometry.attributes.position.array;
-            const targetKey = (targetState === 'TEXT') ? 'text' : 'explode';
-            const targets = group.geometry.userData[(targetState === 'PHOTO') ? 'explode' : targetKey];
-
+            const targets = group.geometry.userData[(targetState === 'PHOTO') ? 'explode' : (targetState === 'TEXT' ? 'text' : 'explode')];
             for(let i=0; i<positions.length; i++) {
                 let t = targets[i];
                 if (Math.random() < 0.001) t += (Math.random() - 0.5) * 5; 
                 positions[i] += (t - positions[i]) * speed;
             }
             group.geometry.attributes.position.needsUpdate = true;
-            
-            if (targetState === 'TEXT') {
-                group.rotation.y = Math.sin(time * 0.2) * 0.1 + (handRotY * 0.2);
-            } else {
-                group.rotation.y += 0.002;
-            }
+            if (targetState === 'TEXT') group.rotation.y = Math.sin(time * 0.2) * 0.1 + (handRotY * 0.2);
+            else group.rotation.y += 0.002;
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            const time = Date.now() * 0.001;
-            const speed = 0.08; 
-            const targetHandRotY = (handX - 0.5) * 2;
-
-            updateParticleGroup(group1, state, speed, targetHandRotY, time);
-            updateParticleGroup(group2, state, speed, targetHandRotY, time); 
-            updateParticleGroup(group3, state, speed, targetHandRotY, time);
+            const time = Date.now() * 0.001; const targetHandRotY = (handX - 0.5) * 2;
+            updateParticleGroup(group1, state, 0.08, targetHandRotY, time);
+            updateParticleGroup(group2, state, 0.08, targetHandRotY, time); 
+            updateParticleGroup(group3, state, 0.08, targetHandRotY, time);
 
             if (state === 'TEXT') {
                 subtitleMesh.visible = true;
                 photoMeshes.forEach(m => { m.scale.lerp(new THREE.Vector3(0,0,0), 0.1); m.visible = false; });
             } else if (state === 'EXPLODE') {
                 subtitleMesh.visible = false;
-                const angleStep = (Math.PI * 2) / photoMeshes.length;
-                let bestIdx = 0; let maxZ = -999;
                 photoMeshes.forEach((mesh, i) => {
                     mesh.visible = true;
-                    const angle = i * angleStep + time * 0.2; 
-                    const x = Math.sin(angle) * CONFIG.photoOrbitRadius;
-                    const z = Math.cos(angle) * CONFIG.photoOrbitRadius;
-                    const y = Math.sin(angle * 2 + time) * 10;
-                    mesh.position.lerp(new THREE.Vector3(x, y, z), 0.05);
+                    const angle = i * (Math.PI * 2 / photoMeshes.length) + time * 0.2; 
+                    mesh.position.lerp(new THREE.Vector3(Math.sin(angle)*65, Math.sin(angle*2+time)*10, Math.cos(angle)*65), 0.05);
                     mesh.lookAt(0, 0, 0); mesh.rotation.y += Math.PI; 
-                    if (z > maxZ) { maxZ = z; bestIdx = i; }
-                    const distScale = 5;
-                    mesh.scale.lerp(new THREE.Vector3(distScale, distScale, 1), 0.1);
-                    if(mesh.userData.scanLine) mesh.userData.scanLine.position.y = Math.sin(time * 3) * 0.4;
+                    if (Math.cos(angle)*65 > (photoMeshes[selectedIndex] ? photoMeshes[selectedIndex].position.z : -999)) selectedIndex = i;
+                    mesh.scale.lerp(new THREE.Vector3(5, 5, 1), 0.1);
                 });
-                selectedIndex = bestIdx;
             } else if (state === 'PHOTO') {
                 photoMeshes.forEach((mesh, i) => {
                     if (i === selectedIndex) {
-                        mesh.position.lerp(new THREE.Vector3(0, 0, 100), 0.08);
-                        mesh.lookAt(camera.position);
-                        const aspect = mesh.userData.aspectRatio || 1.5;
-                        let maxSize = 25; 
-                        let tW = (aspect > 1) ? maxSize : maxSize * aspect;
-                        let tH = (aspect > 1) ? maxSize / aspect : maxSize;
-                        mesh.scale.lerp(new THREE.Vector3(tW, tH, 1), 0.08);
-                    } else {
-                        mesh.scale.lerp(new THREE.Vector3(0,0,0), 0.1);
-                    }
+                        mesh.position.lerp(new THREE.Vector3(0, 0, 100), 0.08); mesh.lookAt(camera.position);
+                        const ar = mesh.userData.aspectRatio || 1.5;
+                        mesh.scale.lerp(new THREE.Vector3(ar>1?25:25*ar, ar>1?25/ar:25, 1), 0.08);
+                    } else mesh.scale.lerp(new THREE.Vector3(0,0,0), 0.1);
                 });
             }
             renderer.render(scene, camera);
         }
 
-        // --- UI & LOGIC ---
-        const mainStatus = document.getElementById('main-status');
-        const subStatus = document.getElementById('sub-status');
-        function updateStatusUI(textState, subText) {
-            mainStatus.innerText = textState;
-            subStatus.innerText = subText;
+        function updateStatusUI(t, s) {
+            document.getElementById('main-status').innerText = t;
+            document.getElementById('sub-status').innerText = s;
         }
 
         function startSystem() {
             document.getElementById('btnStart').style.display = 'none';
             init3D();
-
             const video = document.getElementsByClassName('input_video')[0];
             const canvas = document.getElementById('camera-preview');
             const ctx = canvas.getContext('2d');
             
             const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-            
-            // CẤU HÌNH NHẬN DIỆN TAY: ĐỘ NHẠY CAO
-            hands.setOptions({ 
-                maxNumHands: 1, 
-                modelComplexity: 1, 
-                minDetectionConfidence: 0.3, // Nhạy hơn để bắt xa
-                minTrackingConfidence: 0.3 
-            });
+            hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.3, minTrackingConfidence: 0.3 });
 
-            // --- QUAN TRỌNG: CODE XỬ LÝ KHÔNG VẼ KHỚP TAY ---
             hands.onResults(results => {
-                // 1. Xóa frame cũ
                 ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height); // CHỈ VẼ ẢNH, KHÔNG VẼ KHỚP
                 
-                // 2. Vẽ ảnh camera lên canvas (không vẽ khớp)
-                ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-                
-                // 3. Logic xử lý (ẩn)
                 if(results.multiHandLandmarks.length > 0) {
                     const lm = results.multiHandLandmarks[0];
                     handX = lm[9].x; 
                     const tips = [8,12,16,20]; const wrist = lm[0];
                     let openDist = 0; tips.forEach(i => openDist += Math.hypot(lm[i].x-wrist.x, lm[i].y-wrist.y));
-                    const avgDist = openDist / 4;
                     const pinchDist = Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
 
-                    if (avgDist < 0.2) { 
-                        state = 'TEXT'; updateStatusUI("RECOMPILING...", "[ SYSTEM ENCRYPTED ]");
-                    } else if (pinchDist < 0.05) {
-                        state = 'PHOTO'; updateStatusUI("ACCESS GRANTED", "[ VIEWING FILE: " + selectedIndex + " ]");
-                    } else {
-                        state = 'EXPLODE'; updateStatusUI("DATA STREAM", "[ DECRYPTING... ]");
-                    }
+                    if (openDist/4 < 0.2) { state = 'TEXT'; updateStatusUI("RECOMPILING...", "[ SYSTEM ENCRYPTED ]"); }
+                    else if (pinchDist < 0.05) { state = 'PHOTO'; updateStatusUI("ACCESS GRANTED", "[ VIEWING DATA ]"); }
+                    else { state = 'EXPLODE'; updateStatusUI("DATA STREAM", "[ DECRYPTING... ]"); }
                 } else {
-                    state = 'TEXT'; updateStatusUI("WAITING INPUT", "[ PLEASE SCAN HAND ]");
-                    handX = 0.5; 
+                    state = 'TEXT'; updateStatusUI("WAITING INPUT", "[ PLEASE SCAN HAND ]"); handX = 0.5; 
                 }
             });
 
-            // CẤU HÌNH CAMERA: HD 1280x720
             const cameraUtils = new Camera(video, {
-                onFrame: async () => {
-                    await hands.send({image: video});
-                }, 
-                width: 1280, 
-                height: 720
+                onFrame: async () => { await hands.send({image: video}); }, 
+                width: 1280, height: 720
             });
             cameraUtils.start();
         }
 
         window.onload = () => {
-            const btn = document.getElementById('btnStart');
             preLoadAndGenerateTextPoints(() => {
-                btn.innerText = ">> EXECUTE SYSTEM <<";
+                const btn = document.getElementById('btnStart');
+                btn.innerText = ">> START SYSTEM <<";
                 btn.disabled = false;
             });
         };
-
+        
         window.addEventListener('resize', () => {
             if(camera) { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
         });
