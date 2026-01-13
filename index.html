@@ -465,51 +465,58 @@
             
             let frameCnt = 0;
             const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-            hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+            hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.3, minTrackingConfidence: 0.3 });
 
             hands.onResults(results => {
-                const width = canvas.width;
-                const height = canvas.height;
-
-                ctx.clearRect(0,0,width,height); 
-                ctx.drawImage(results.image, 0, 0, width, height);
+                // 1. Xóa khung tranh cũ
+                ctx.clearRect(0, 0, 160, 120); 
                 
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    for (const landmarks of results.multiHandLandmarks) {
-                        drawConnectors(ctx, landmarks, HAND_CONNECTIONS,
-                                       {color: '#00ff41', lineWidth: 2});
-                        drawLandmarks(ctx, landmarks,
-                                      {color: '#00f3ff', lineWidth: 1, radius: 3});
-                    }
+                // 2. Vẽ hình ảnh camera gốc (có filter Matrix nếu code cũ có chỉnh)
+                // Nếu muốn ảnh camera tự nhiên, không filter màu mè thì dùng dòng này:
+                ctx.drawImage(results.image, 0, 0, 160, 120);
+                
+                // --- ĐÃ XÓA PHẦN VẼ KHỚP TAY (drawConnectors / drawLandmarks) TẠI ĐÂY ---
 
+                // 3. Phần logic tính toán khoảng cách (GIỮ NGUYÊN để điều khiển được)
+                if(results.multiHandLandmarks.length > 0) {
                     const lm = results.multiHandLandmarks[0];
+                    
+                    // Lấy tọa độ để xoay khối
                     handX = lm[9].x; 
+                    
+                    // Tính toán chụm ngón tay / xòe tay
                     const tips = [8,12,16,20]; const wrist = lm[0];
                     let openDist = 0; tips.forEach(i => openDist += Math.hypot(lm[i].x-wrist.x, lm[i].y-wrist.y));
                     const avgDist = openDist / 4;
                     const pinchDist = Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
 
+                    // Logic chuyển đổi trạng thái
                     if (avgDist < 0.2) { 
-                        state = 'TEXT'; updateStatusUI("STABLE MODE", "[ SYSTEM LOCKED ]");
+                        state = 'TEXT'; updateStatusUI("RECOMPILING...", "[ SYSTEM ENCRYPTED ]");
                     } else if (pinchDist < 0.05) {
-                        state = 'PHOTO'; updateStatusUI("PHOTO MODE", "[ VIEWING FILE: " + selectedIndex + " ]");
+                        state = 'PHOTO'; updateStatusUI("ACCESS GRANTED", "[ VIEWING FILE: " + selectedIndex + " ]");
                     } else {
-                        state = 'EXPLODE'; updateStatusUI("EXPLODE MODE", "[ DATA STREAMING... ]");
+                        state = 'EXPLODE'; updateStatusUI("DATA STREAM", "[ DECRYPTING... ]");
                     }
                 } else {
-                    state = 'TEXT'; updateStatusUI("STANDBY", "[ WAITING INPUT ]");
+                    // Khi không có tay
+                    state = 'TEXT'; updateStatusUI("WAITING INPUT", "[ PLEASE SCAN HAND ]");
                     handX = 0.5; 
                 }
             });
 
             const cameraUtils = new Camera(video, {
-                onFrame: async () => {
-                    frameCnt++; if(frameCnt%2 !== 0) return; 
-                    await hands.send({image: video});
-                }, width: 640, height: 480 
-            });
-            cameraUtils.start();
-        }
+    onFrame: async () => {
+        // frameCnt giúp giảm tải nếu máy yếu (xử lý 1 bỏ 1 frame)
+        // Nếu máy khỏe, bạn có thể bỏ dòng frameCnt bên dưới đi để mượt hơn
+        frameCnt++; if(frameCnt % 2 !== 0) return; 
+        
+        await hands.send({image: video});
+    },
+    width: 1280,  // Tăng lên HD để nhìn rõ tay ở xa
+    height: 720   // Tăng lên HD
+});
+cameraUtils.start();
 
         window.onload = () => {
             const btn = document.getElementById('btnStart');
